@@ -1,0 +1,24 @@
+# spring-boot-app/Dockerfile
+FROM eclipse-temurin:23-jdk AS builder
+WORKDIR /app
+
+# Copy gradle wrapper first (better layer caching)
+COPY gradlew .
+COPY gradle gradle
+RUN chmod +x gradlew
+
+# Copy build files
+COPY build.gradle settings.gradle ./
+
+# Download dependencies (cached layer if build.gradle doesn't change)
+RUN ./gradlew dependencies --no-daemon
+
+# Copy source and build
+COPY src src
+RUN ./gradlew build -x test --no-daemon
+
+# Runtime image (smaller)
+FROM eclipse-temurin:23-jre
+WORKDIR /app
+COPY --from=builder /app/build/libs/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]

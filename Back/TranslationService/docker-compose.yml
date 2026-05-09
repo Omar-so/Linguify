@@ -1,0 +1,91 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    restart: always
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+
+  spring-boot:
+    build: ./Translation
+    restart: always
+    env_file: .env
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/app/logs        # maps your logs/ folder out of the container
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  fastapi:
+    build: ./app
+    restart: always
+    env_file: .env
+    environment:
+      redis_url: ${REDIS_URL}
+      job_stream: ${JOB_STREAM}
+      RESULT_STREAM: ${RESULT_STREAM}
+      dead_letter_stream: ${DEAD_LETTER_STREAM}
+      roboflow_api_key: ${ROBOFLOW_API_KEY}
+      roboflow_workspace: ${ROBOFLOW_WORKSPACE}
+      roboflow_workflow_id: ${ROBOFLOW_WORKFLOW_ID}
+      ocr_api_url: ${OCR_API_URL}
+      ocr_api_token: ${OCR_API_TOKEN}
+      cdn_strategy: ${CDN_STRATEGY}
+      detection_strategy: ${DETECTION_STRATEGY}
+      ocr_strategy: ${OCR_STRATEGY}
+      translation_strategy: ${TRANSLATION_STRATEGY}
+      broker_strategy: ${BROKER_STRATEGY}
+      cloudinary_cloud_name: ${CLOUDINARY_CLOUD_NAME}
+      cloudinary_api_key: ${CLOUDINARY_API_KEY}
+      cloudinary_api_secret: ${CLOUDINARY_API_SECRET}
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  MyNetwork:
+    driver: bridge

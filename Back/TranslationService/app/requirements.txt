@@ -1,0 +1,29 @@
+# Web Framework
+fastapi
+uvicorn
+
+# Async & HTTP
+aiohttp
+aioredis
+aiofiles
+
+# Image Processing
+opencv-python
+numpy
+
+# Text Rendering & Graphics
+pycairo
+PyGObject
+
+# Translation
+translate
+
+# Configuration
+pydantic-settings
+pydantic
+python-dotenv
+
+# Roboflow Detection (corrected version)
+inference-sdk 
+
+cloudinary
