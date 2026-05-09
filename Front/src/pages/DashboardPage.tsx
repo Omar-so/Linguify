@@ -37,7 +37,7 @@ export const DashboardPage = () => {
   }, [cleanupSSE]);
 
   const connectSSE = (token: string) => {
-    const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://13.62.227.111:8080';
+    const baseUrl = import.meta.env.VITE_BACKEND_URL || 'https://translatordomain.duckdns.org';
     fetch(`${baseUrl}/Api/User/images/stream`, {
       headers: {
         'Authorization': `Bearer ${token}`,
