@@ -1,9 +1,0 @@
-.local/
-__pycache__/
-*.pyc
-*.pyo
-.python-version
-*.egg-info/
-.venv/
-venv/
-
